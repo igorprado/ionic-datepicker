@@ -4,7 +4,20 @@
   </ion-header-bar>
   <ion-content class="ionic_datepicker_modal_content">
     <div class="ionic_datepicker">
-      <div class="selected_date_full">{{selectedDateFull | date:"dd-MM-yyyy"}}</div>
+      <div ng-if="!selectMultiple" class="selected_date_full">{{selectedDateFull | date:"dd-MM-yyyy"}}</div>
+
+      <div ng-if="selectMultiple && datesSelected.length" class="selected_dates_full">
+        Dates selected:
+        <ul>
+          <li ng-repeat="date in datesSelected">
+            {{date.dateObj | date:"dd-MM-yyyy"}}
+            <button class="button button-clear" ng-click="removeFromSelectedDates(date)">
+              <i class="icon ion-close-circled"></i>
+            </button>
+          </li>
+        </ul>
+      </div>
+
       <div class="row">
         <div class="col col-10 left_arrow" ng-click="prevMonth()"
              ng-class="{'pointer_events_none':(enableDatesFrom.isSet && enableDatesFrom.epoch > currentMonthFirstDayEpoch)}">
@@ -57,7 +70,7 @@
           <div class="row" ng-repeat="row in rows track by $index" style="text-align: center;">
             <div class="col no_padding" ng-repeat="col in cols track by $index"
                  ng-class="{'date_col': (dayList[$parent.$index * numColumns + $index].day != undefined),
-      'date_selected': (dayList[$parent.$index * numColumns + $index].dateString === selctedDateStringCopy && dayList[$parent.$index * numColumns + $index].day != undefined) ,
+      'date_selected': isDateSelected(dayList[$parent.$index * numColumns + $index]),
       'today' : (dayList[$parent.$index * numColumns + $index].date == today.date && dayList[$parent.$index * numColumns + $index].month == today.month && dayList[$parent.$index * numColumns + $index].year == today.year)}">
               <div class="date_cell" ng-click="dateSelected(dayList[$parent.$index * numColumns + $index])"
                    ng-class="{'pointer_events_none':(disabledDates.indexOf(dayList[$parent.$index * numColumns + $index].epochLocal) > -1) || (enableDatesFrom.isSet && enableDatesFrom.epoch > dayList[$parent.$index * numColumns + $index].epochLocal) || (enableDatesTo.isSet && enableDatesTo.epoch < dayList[$parent.$index * numColumns + $index].epochLocal)}">

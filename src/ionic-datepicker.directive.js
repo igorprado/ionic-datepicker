@@ -34,6 +34,11 @@
         scope.templateType = scope.inputObj.templateType ? (scope.inputObj.templateType) : 'modal';
         scope.modalHeaderColor = scope.inputObj.modalHeaderColor ? (scope.inputObj.modalHeaderColor) : 'bar-stable';
         scope.modalFooterColor = scope.inputObj.modalFooterColor ? (scope.inputObj.modalFooterColor) : 'bar-stable';
+        scope.selectMultiple = scope.inputObj.selectMultiple ? (scope.inputObj.selectMultiple) : false;
+
+        if (scope.selectMultiple) {
+          scope.datesSelected = [];
+        }
 
         scope.enableDatesFrom = {epoch: 0, isSet: false};
         scope.enableDatesTo = {epoch: 0, isSet: false};
@@ -218,17 +223,68 @@
 
         scope.dateSelected = function (date) {
           if(!date) return;
-          scope.selctedDateString = date.dateString;
-          scope.selctedDateStringCopy = angular.copy(scope.selctedDateString);
-          scope.date_selection.selected = true;
-          scope.date_selection.selectedDate = new Date(date.dateString);
-          scope.selectedDateFull = scope.date_selection.selectedDate;
+
+          if (scope.selectMultiple) {
+            var _dateAlreadySelected = scope.removeFromSelectedDates(date);
+
+            if (_dateAlreadySelected) {
+              return;
+            }
+
+            scope.datesSelected.push({
+              dateObj: new Date(date.dateString),
+              dateString: date.dateString
+            });
+
+          } else {
+            scope.selctedDateString = date.dateString;
+            scope.selctedDateStringCopy = angular.copy(scope.selctedDateString);
+            scope.date_selection.selected = true;
+            scope.date_selection.selectedDate = new Date(date.dateString);
+            scope.selectedDateFull = scope.date_selection.selectedDate;
+          }
+
+        };
+
+        scope.isDateSelected = function(date) {
+          if (!date) return;
+          if (scope.selectMultiple) {
+            var _isSelected = false;
+            angular.forEach(scope.datesSelected, function(dateSelected) {
+              if (dateSelected.dateString === date.dateString && date.day != undefined) {
+                _isSelected = true;
+              }
+            });
+
+            return _isSelected;
+          } else {
+            return date.dateString === scope.selctedDateStringCopy && date.day != undefined;
+          }
+        };
+
+        scope.removeFromSelectedDates = function(date) {
+          var _dateFound = false;
+          angular.forEach(scope.datesSelected, function(dateSelected, index) {
+            if (dateSelected.dateString === date.dateString) {
+              scope.datesSelected.splice(index, 1);
+              _dateFound = true;
+            }
+          });
+
+          return _dateFound;
         };
 
         //Called when the user clicks on any date.
         function dateSelected() {
           scope.date_selection.submitted = true;
           if (scope.date_selection.selected === true) {
+            if (scope.selectMultiple) {
+              var _toReturn = scope.datesSelected.map(function(dateSelected) {
+                return dateSelected.dateStr;
+              });
+
+              return scope.inputObj.callback(_toReturn);
+            }
             scope.inputObj.callback(scope.date_selection.selectedDate);
           }
         }

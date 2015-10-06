@@ -39,5 +39,8 @@ gulp.task('del', function () {
   del(['dist/*']);
 });
 
-gulp.task('build', ['del-temp-files']);
+gulp.task('watch', function() {
+  gulp.watch('src/*', ['build']);
+});
 
+gulp.task('build', ['del-temp-files']);
