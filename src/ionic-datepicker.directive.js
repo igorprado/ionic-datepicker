@@ -159,7 +159,6 @@
               epochUTC: (tempDate.getTime() + (tempDate.getTimezoneOffset() * 60 * 1000))
             });
 
-            scope.$apply();
           }
 
           //To set Monday as the first day of the week.
