@@ -139,7 +139,7 @@
           current_date.setSeconds(0);
           current_date.setMilliseconds(0);
 
-          scope.selctedDateString = (new Date(current_date)).toString();
+          scope.selctedDateString = scope.selctedDateStringCopy = (new Date(current_date)).toString();
           currentDate = angular.copy(current_date);
 
           var firstDay = new Date(current_date.getFullYear(), current_date.getMonth(), 1).getDate();
@@ -158,6 +158,8 @@
               epochLocal: tempDate.getTime(),
               epochUTC: (tempDate.getTime() + (tempDate.getTimezoneOffset() * 60 * 1000))
             });
+
+            scope.$apply();
           }
 
           //To set Monday as the first day of the week.
@@ -280,7 +282,7 @@
           if (scope.date_selection.selected === true) {
             if (scope.selectMultiple) {
               var _toReturn = scope.datesSelected.map(function(dateSelected) {
-                return dateSelected.dateStr;
+                return dateSelected.dateString;
               });
 
               return scope.inputObj.callback(_toReturn);

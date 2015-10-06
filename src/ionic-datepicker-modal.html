@@ -7,15 +7,17 @@
       <div ng-if="!selectMultiple" class="selected_date_full">{{selectedDateFull | date:"dd-MM-yyyy"}}</div>
 
       <div ng-if="selectMultiple && datesSelected.length" class="selected_dates_full">
-        Dates selected:
-        <ul>
-          <li ng-repeat="date in datesSelected">
-            {{date.dateObj | date:"dd-MM-yyyy"}}
-            <button class="button button-clear" ng-click="removeFromSelectedDates(date)">
-              <i class="icon ion-close-circled"></i>
-            </button>
-          </li>
-        </ul>
+        <div ng-repeat="date in datesSelected track by $index">
+          <div class="row" ng-if="$index % 3 == 0">
+            <div class="col" ng-repeat="_date in [datesSelected[$index], datesSelected[$index + 1], datesSelected[$index + 2]] track by $index">
+              <button ng-if="_date"
+                class="button button-light button-small button-block icon-right ion-close-circled"
+                ng-click="removeFromSelectedDates(_date)">
+                {{_date.dateObj | date:"dd/MM/yyyy"}}
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div class="row">

@@ -5,6 +5,15 @@
   padding-bottom: 5px;
 }
 
+.selected_dates_full .row {
+  padding: 0;
+}
+
+.selected_dates_full .button {
+    margin-top: 0;
+    margin-bottom: 0;
+}
+
 .color_blue {
   color: rgb(56, 126, 245) !important;
 }

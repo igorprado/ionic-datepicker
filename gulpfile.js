@@ -40,7 +40,7 @@ gulp.task('del', function () {
 });
 
 gulp.task('watch', function() {
-  gulp.watch('src/*', ['build']);
+  gulp.watch('src/*', ['html2js']);
 });
 
 gulp.task('build', ['del-temp-files']);
