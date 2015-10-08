@@ -28,8 +28,6 @@
         scope.currentYear = '';
         scope.disabledDates = [];
 
-        console.log(scope.inputObj);
-
         //Setting the title, today, close and set strings for the date picker
         scope.titleLabel = scope.inputObj.titleLabel ? (scope.inputObj.titleLabel) : 'Select Date';
         scope.todayLabel = scope.inputObj.todayLabel ? (scope.inputObj.todayLabel) : 'Today';
@@ -244,19 +242,16 @@
           if(!date) return;
 
           if (scope.selectMultipleDates) {
-            var _dateAlreadySelected = scope.removeFromSelectedDates(date);
+            var _dateAlreadySelected = scope.checkIfAlreadySelected(date);
 
             if (_dateAlreadySelected) {
-              return;
+              scope.selectedDate.date.splice(scope.selectedDate.date.indexOf(_dateAlreadySelected), 1);
+            } else {
+              scope.selectedDate.date.push({
+                obj: new Date(date.dateString),
+                string: date.dateString
+              });
             }
-
-
-            scope.selectedDate.date.push({
-              obj: new Date(date.dateString),
-              string: date.dateString
-            });
-
-            scope.selectedDate.selected = scope.selectedDate.date.length;
 
             // Sort the dates from most recent
             scope.selectedDate.date.sort(function(a, b) {
@@ -265,8 +260,21 @@
 
           } else {
             scope.selectedDate.string = date.dateString;
-            scope.selectedDate.selected = true;
             scope.selectedDate.date = new Date(date.dateString);
+          }
+
+          // Check if there is a callback for each date click
+          if (typeof scope.inputObj.callbackOnDateClick === 'function') {
+            var _selectedDate;
+            if (angular.isArray(scope.selectedDate.date)) {
+              _selectedDate = scope.selectedDate.date.map(function(selectedDate) {
+                return selectedDate.string;
+              });
+            } else {
+              _selectedDate = scope.selectedDate.date.string;
+            }
+
+            return scope.inputObj.callbackOnDateClick(_selectedDate);
           }
 
         };
@@ -288,12 +296,11 @@
           }
         };
 
-        scope.removeFromSelectedDates = function(date) {
+        scope.checkIfAlreadySelected = function(date) {
           var _dateFound = false;
-          angular.forEach(scope.selectedDate.date, function(dateSelected, index) {
-            if (dateSelected.string === date.dateString) {
-              scope.selectedDate.date.splice(index, 1);
-              _dateFound = true;
+          angular.forEach(scope.selectedDate.date, function(selectedDate, index) {
+            if (selectedDate.string === date.dateString) {
+              _dateFound = selectedDate;
             }
           });
 
@@ -303,13 +310,13 @@
         //Called when the user clicks on set.
         function dateSelected() {
           scope.selectedDate.submitted = true;
-          if (scope.selectedDate.selected === true) {
+          if (scope.selectedDate.date) {
             if (scope.selectMultipleDates) {
-              var _toReturn = scope.selectedDate.date.map(function(dateSelected) {
-                return dateSelected;
+              var _selectedDates = scope.selectedDate.date.map(function(selectedDate) {
+                return selectedDate.string;
               });
 
-              return scope.inputObj.callback(_toReturn);
+              return scope.inputObj.callback(_selectedDates);
             }
             scope.inputObj.callback(scope.selectedDate.date);
           }
@@ -348,7 +355,6 @@
 
         //Called when the user clicks on the 'Close' button of the modal
         scope.closeIonicDatePickerModal = function () {
-          scope.inputObj.callback(undefined);
           scope.closeModal();
         };
         //Called when the user clicks on the 'Today' button of the modal
@@ -358,7 +364,7 @@
         //Called when the user clicks on the Set' button of the modal
         scope.setIonicDatePickerDate = function () {
           dateSelected();
-          if (scope.selectedDate.selected) {
+          if (scope.selectedDate.date || scope.selectedDate.date.length) {
             scope.closeModal();
           }
         };
@@ -381,7 +387,6 @@
         //Called when the user clicks on the button to invoke the 'ionic-datepicker'
         element.on("click", function () {
           if (scope.selectedDate.date) {
-            console.log(scope.selectedDate);
             var _date = angular.isArray(scope.selectedDate.date) ? scope.selectedDate.date[scope.selectedDate.date.length - 1].obj : scope.selectedDate.date;
             refreshDateList(_date);
           }
