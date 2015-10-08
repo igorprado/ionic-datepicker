@@ -17,6 +17,13 @@
       },
       link: function (scope, element, attrs) {
 
+        function resetTime(date) {
+          date.setHours(0);
+          date.setMinutes(0);
+          date.setSeconds(0);
+          date.setMilliseconds(0);
+        }
+
         scope.currentMonth = '';
         scope.currentYear = '';
         scope.disabledDates = [];
@@ -26,7 +33,9 @@
         scope.todayLabel = scope.inputObj.todayLabel ? (scope.inputObj.todayLabel) : 'Today';
         scope.closeLabel = scope.inputObj.closeLabel ? (scope.inputObj.closeLabel) : 'Close';
         scope.setLabel = scope.inputObj.setLabel ? (scope.inputObj.setLabel) : 'Set';
-        scope.showTodayButton = scope.inputObj.showTodayButton ? (scope.inputObj.showTodayButton) : 'true';
+        scope.showTodayButton = scope.inputObj.showTodayButton ? (scope.inputObj.showTodayButton) : true;
+        scope.showSetButton = scope.inputObj.showSetButton ? (scope.inputObj.showSetButton) : true;
+        scope.showCloseButton = scope.inputObj.showCloseButton ? (scope.inputObj.showCloseButton) : true;
         scope.errorMsgLabel = scope.inputObj.errorMsgLabel ? (scope.inputObj.errorMsgLabel) : 'Please select a date.';
         scope.setButtonType = scope.inputObj.setButtonType ? (scope.inputObj.setButtonType) : 'button-positive';
         scope.todayButtonType = scope.inputObj.todayButtonType ? (scope.inputObj.todayButtonType) : 'button-stable';
@@ -34,22 +43,26 @@
         scope.templateType = scope.inputObj.templateType ? (scope.inputObj.templateType) : 'modal';
         scope.modalHeaderColor = scope.inputObj.modalHeaderColor ? (scope.inputObj.modalHeaderColor) : 'bar-stable';
         scope.modalFooterColor = scope.inputObj.modalFooterColor ? (scope.inputObj.modalFooterColor) : 'bar-stable';
-        scope.selectMultiple = scope.inputObj.selectMultiple ? (scope.inputObj.selectMultiple) : false;
-
-        if (scope.selectMultiple) {
-          scope.datesSelected = [];
-        }
+        scope.selectMultipleDates = scope.inputObj.selectMultiple ? (scope.inputObj.selectMultiple) : false;
 
         scope.enableDatesFrom = {epoch: 0, isSet: false};
         scope.enableDatesTo = {epoch: 0, isSet: false};
 
         // creating buttons
-        var buttons  = [];
-        buttons.push({text: scope.closeLabel,type: scope.closeButtonType,onTap: function (e) {scope.inputObj.callback(undefined);}});
-        if(scope.showTodayButton == 'true'){
-          buttons.push({text: scope.todayLabel, type: scope.todayButtonType, onTap: function (e) { todaySelected(); e.preventDefault();}});
+        scope.buttons  = [];
+
+        if(scope.showCloseButton){
+          scope.buttons.push({text: scope.closeLabel,type: scope.closeButtonType,onTap: function (e) {scope.inputObj.callback(undefined);}});
         }
-        buttons.push({text: scope.setLabel,type: scope.setButtonType,onTap: function () { dateSelected();}});
+
+        if(scope.showTodayButton){
+          scope.buttons.push({text: scope.todayLabel, type: scope.todayButtonType, onTap: function (e) { todaySelected(); e.preventDefault();}});
+        }
+
+        if(scope.showSetButton){
+          scope.buttons.push({text: scope.setLabel,type: scope.setButtonType,onTap: function () { dateSelected();}});
+        }
+
 
         //Setting the from and to dates
         if (scope.inputObj.from) {
@@ -68,7 +81,13 @@
         } else {
           scope.ipDate = new Date();
         }
-        scope.selectedDateFull = scope.ipDate;
+
+        // Define defaults of selected date (or dates if multiple)
+        scope.selectedDate = {
+          submitted: false,
+          selected: false,
+          date: scope.selectMultipleDates ? [] : null
+        };
 
         //Setting the months list. This is useful, if the component needs to use some other language.
         scope.monthsList = [];
@@ -96,22 +115,15 @@
           scope.disabledDates = [];
         } else {
           angular.forEach(scope.inputObj.disabledDates, function (val, key) {
-            val.setHours(0);
-            val.setMinutes(0);
-            val.setSeconds(0);
-            val.setMilliseconds(0);
+            resetTime(val);
 
             scope.disabledDates.push(val.getTime());
           });
         }
 
         var currentDate = angular.copy(scope.ipDate);
-        currentDate.setHours(0);
-        currentDate.setMinutes(0);
-        currentDate.setSeconds(0);
-        currentDate.setMilliseconds(0);
+        resetTime(currentDate);
 
-        scope.selctedDateString = currentDate.toString();
         scope.today = {};
 
         if (scope.mondayFirst === true) {
@@ -133,22 +145,20 @@
           epochUTC: (tempToday.getTime() + (tempToday.getTimezoneOffset() * 60 * 1000))
         };
 
-        var refreshDateList = function (current_date) {
-          current_date.setHours(0);
-          current_date.setMinutes(0);
-          current_date.setSeconds(0);
-          current_date.setMilliseconds(0);
+        var refreshDateList = function(date) {
+          resetTime(date);
 
-          scope.selctedDateString = scope.selctedDateStringCopy = (new Date(current_date)).toString();
-          currentDate = angular.copy(current_date);
+          scope.selectedDate.string = scope.selectedDate.stringCopy = (new Date(date)).toString();
 
-          var firstDay = new Date(current_date.getFullYear(), current_date.getMonth(), 1).getDate();
-          var lastDay = new Date(current_date.getFullYear(), current_date.getMonth() + 1, 0).getDate();
+          currentDate = angular.copy(date);
+
+          var firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDate();
+          var lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
 
           scope.dayList = [];
 
           for (var i = firstDay; i <= lastDay; i++) {
-            var tempDate = new Date(current_date.getFullYear(), current_date.getMonth(), i);
+            var tempDate = new Date(date.getFullYear(), date.getMonth(), i);
             scope.dayList.push({
               date: tempDate.getDate(),
               month: tempDate.getMonth(),
@@ -175,8 +185,8 @@
           scope.rows = [];
           scope.cols = [];
 
-          scope.currentMonth = scope.monthsList[current_date.getMonth()];
-          scope.currentYear = current_date.getFullYear();
+          scope.currentMonth = scope.monthsList[date.getMonth()];
+          scope.currentYear = date.getFullYear();
           scope.currentMonthSelected = scope.currentMonth;
           scope.currentYearSelected = scope.currentYear;
 
@@ -218,40 +228,42 @@
           refreshDateList(currentDate);
         };
 
-        scope.date_selection = {selected: false, selectedDate: '', submitted: false};
-        scope.date_selection.selected = true;
-        scope.date_selection.selectedDate = scope.ipDate;
-
-        scope.dateSelected = function (date) {
+        //Called when the user clicks on any date.
+        scope.dateSelected = function(date) {
           if(!date) return;
 
-          if (scope.selectMultiple) {
+          if (scope.selectMultipleDates) {
             var _dateAlreadySelected = scope.removeFromSelectedDates(date);
 
             if (_dateAlreadySelected) {
               return;
             }
 
-            scope.datesSelected.push({
+            scope.selectedDate.selected = true;
+            scope.selectedDate.date.push({
               dateObj: new Date(date.dateString),
               dateString: date.dateString
             });
 
+            // Sort the dates from most recent
+            scope.selectedDate.date.sort(function(a, b) {
+              return a.dateObj - b.dateObj;
+            });
+
           } else {
-            scope.selctedDateString = date.dateString;
-            scope.selctedDateStringCopy = angular.copy(scope.selctedDateString);
-            scope.date_selection.selected = true;
-            scope.date_selection.selectedDate = new Date(date.dateString);
-            scope.selectedDateFull = scope.date_selection.selectedDate;
+            scope.selectedDate.string = date.dateString;
+            scope.selectedDate.stringCopy = angular.copy(scope.selctedDateString);
+            scope.selectedDate.selected = true;
+            scope.selectedDate.date = new Date(date.dateString);
           }
 
         };
 
         scope.isDateSelected = function(date) {
           if (!date) return;
-          if (scope.selectMultiple) {
+          if (scope.selectMultipleDates) {
             var _isSelected = false;
-            angular.forEach(scope.datesSelected, function(dateSelected) {
+            angular.forEach(scope.selectedDate.date, function(dateSelected) {
               if (dateSelected.dateString === date.dateString && date.day != undefined) {
                 _isSelected = true;
               }
@@ -265,9 +277,9 @@
 
         scope.removeFromSelectedDates = function(date) {
           var _dateFound = false;
-          angular.forEach(scope.datesSelected, function(dateSelected, index) {
+          angular.forEach(scope.selectedDate.date, function(dateSelected, index) {
             if (dateSelected.dateString === date.dateString) {
-              scope.datesSelected.splice(index, 1);
+              scope.selectedDate.date.splice(index, 1);
               _dateFound = true;
             }
           });
@@ -275,28 +287,26 @@
           return _dateFound;
         };
 
-        //Called when the user clicks on any date.
+        //Called when the user clicks on set.
         function dateSelected() {
-          scope.date_selection.submitted = true;
-          if (scope.date_selection.selected === true) {
-            if (scope.selectMultiple) {
-              var _toReturn = scope.datesSelected.map(function(dateSelected) {
+          console.log('aqui');
+          scope.selectedDate.submitted = true;
+          if (scope.selectedDate.selected === true) {
+            if (scope.selectMultipleDates) {
+              var _toReturn = scope.selectedDate.date.map(function(dateSelected) {
                 return dateSelected.dateString;
               });
 
               return scope.inputObj.callback(_toReturn);
             }
-            scope.inputObj.callback(scope.date_selection.selectedDate);
+            scope.inputObj.callback(scope.selectedDate.date);
           }
         }
 
         //Called when the user clicks on the 'Today' button
         function todaySelected() {
           var today = new Date();
-          today.setHours(0);
-          today.setMinutes(0);
-          today.setSeconds(0);
-          today.setMilliseconds(0);
+          resetTime(today);
 
           var tempEpoch = new Date(today.getFullYear(), today.getMonth(), today.getDate());
           var todayObj = {
@@ -309,11 +319,11 @@
             epochUTC: (tempEpoch.getTime() + (tempEpoch.getTimezoneOffset() * 60 * 1000))
           };
 
-          scope.selctedDateString = todayObj.dateString;
-          scope.selctedDateStringCopy = angular.copy(scope.selctedDateString);
-          scope.date_selection.selected = true;
-          scope.date_selection.selectedDate = new Date(todayObj.dateString);
-          refreshDateList(new Date());
+          scope.selectedDate.string = todayObj.dateString;
+          scope.selectedDate.stringCopy = angular.copy(scope.selectedDate.string);
+          scope.selectedDate.selected = true;
+          scope.selectedDate.date = new Date(todayObj.dateString);
+          refreshDateList(today);
         }
 
         //Called when the user clicks on the 'Close' button of the modal
@@ -348,8 +358,9 @@
 
         //Called when the user clicks on the button to invoke the 'ionic-datepicker'
         element.on("click", function () {
-          if (scope.date_selection.selectedDate) {
-            refreshDateList(scope.date_selection.selectedDate);
+          if (scope.dateSelected.date) {
+            var _date = angular.isArray(scope.dateSelected.date) ? scope.dateSelected.date[scope.dateSelected.date.length] : scope.dateSelected.date;
+            refreshDateList(_date);
           } else if (scope.ipDate) {
             refreshDateList(angular.copy(scope.ipDate));
           } else {
@@ -364,7 +375,7 @@
               title: scope.titleLabel,
               subTitle: '',
               scope: scope,
-              buttons: buttons
+              buttons: scope.buttons
             });
           }
         });
