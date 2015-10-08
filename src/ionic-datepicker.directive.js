@@ -45,7 +45,7 @@
         scope.templateType = scope.inputObj.templateType ? (scope.inputObj.templateType) : 'modal';
         scope.modalHeaderColor = scope.inputObj.modalHeaderColor ? (scope.inputObj.modalHeaderColor) : 'bar-stable';
         scope.modalFooterColor = scope.inputObj.modalFooterColor ? (scope.inputObj.modalFooterColor) : 'bar-stable';
-        scope.selectMultipleDates = scope.inputObj.hasOwnProperty('selectMultiple') ? (scope.inputObj.selectMultiple) : false;
+        scope.selectMultipleDates = scope.inputObj.hasOwnProperty('selectMultipleDates') ? (scope.inputObj.selectMultipleDates) : false;
 
         scope.enableDatesFrom = {epoch: 0, isSet: false};
         scope.enableDatesTo = {epoch: 0, isSet: false};
