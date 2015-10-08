@@ -84,7 +84,7 @@
         // Define defaults of selected date (or dates if multiple)
         scope.selectedDate = {
           submitted: false,
-          selected: false
+          date: scope.selectMultipleDates ? [] : null
         };
 
         // Check if it's an array for multiple selection
@@ -97,7 +97,7 @@
               string: _date.toString()
             };
           });
-        } else {
+        } else if (inputDate) {
           scope.selectedDate.date = inputDate;
           scope.selectedDate.string = inputDate.toString();
         }
@@ -134,7 +134,16 @@
           });
         }
 
-        var currentDate = scope.selectedDate.date ? (angular.isArray(scope.selectedDate.date) ? scope.selectedDate.date[scope.selectedDate.date.length - 1].obj : scope.selectedDate.date) : new Date();
+        var currentDate = new Date();
+
+        if (scope.selectedDate.date) {
+          if (angular.isArray(scope.selectedDate.date) && scope.selectedDate.date.length > 0) {
+            currentDate = scope.selectedDate.date[scope.selectedDate.date.length - 1].obj;
+          } else if (!angular.isArray(scope.selectedDate.date)) {
+            currentDate = scope.selectedDate.date;
+          }
+        }
+
         resetTime(currentDate);
 
         scope.today = {};
@@ -386,10 +395,8 @@
 
         //Called when the user clicks on the button to invoke the 'ionic-datepicker'
         element.on("click", function () {
-          if (scope.selectedDate.date) {
-            var _date = angular.isArray(scope.selectedDate.date) ? scope.selectedDate.date[scope.selectedDate.date.length - 1].obj : scope.selectedDate.date;
-            refreshDateList(_date);
-          }
+
+          refreshDateList(currentDate);
 
           if (scope.templateType.toLowerCase() === 'modal') {
             scope.openModal();
