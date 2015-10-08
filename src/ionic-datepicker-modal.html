@@ -56,12 +56,21 @@
         </div>
         <div>
           <div class="row" ng-repeat="row in rows track by $index" style="text-align: center;">
-            <div class="col no_padding" ng-repeat="col in cols track by $index"
-                 ng-class="{'date_col': (dayList[$parent.$index * numColumns + $index].day != undefined),
-      'date_selected': isDateSelected(dayList[$parent.$index * numColumns + $index]),
-      'today' : (dayList[$parent.$index * numColumns + $index].date == today.date && dayList[$parent.$index * numColumns + $index].month == today.month && dayList[$parent.$index * numColumns + $index].year == today.year)}">
-              <div class="date_cell" ng-click="dateSelected(dayList[$parent.$index * numColumns + $index])"
-                   ng-class="{'pointer_events_none':(disabledDates.indexOf(dayList[$parent.$index * numColumns + $index].epochLocal) > -1) || (enableDatesFrom.isSet && enableDatesFrom.epoch > dayList[$parent.$index * numColumns + $index].epochLocal) || (enableDatesTo.isSet && enableDatesTo.epoch < dayList[$parent.$index * numColumns + $index].epochLocal)}">
+            <div class="col no_padding"
+                ng-repeat="col in cols track by $index"
+                 ng-class="{
+                    'date_col': (dayList[$parent.$index * numColumns + $index].day != undefined),
+                    'date_selected': isDateSelected(dayList[$parent.$index * numColumns + $index]),
+                    'today': (dayList[$parent.$index * numColumns + $index].date == today.date && dayList[$parent.$index * numColumns + $index].month == today.month && dayList[$parent.$index * numColumns + $index].year == today.year)}">
+              <div
+                class="date_cell"
+                ng-click="dateSelected(dayList[$parent.$index * numColumns + $index])"
+                ng-class="{
+                  'pointer_events_none': (disabledDates.indexOf(dayList[$parent.$index * numColumns + $index].epochLocal) > -1)
+                                          || (enableDatesFrom.isSet
+                                          && enableDatesFrom.epoch > dayList[$parent.$index * numColumns + $index].epochLocal)
+                                          || (enableDatesTo.isSet
+                                          && enableDatesTo.epoch < dayList[$parent.$index * numColumns + $index].epochLocal)}">
                 {{ dayList[$parent.$index * numColumns + $index].date }}
               </div>
             </div>
@@ -69,7 +78,7 @@
         </div>
       </div>
       <div class="error_msg padding-horizontal"
-           ng-show="date_selection.submitted === true && date_selection.selected === false">{{errorMsgLabel}}
+           ng-show="selectedDate.submitted === true && selectedDate.selected === false">{{errorMsgLabel}}
       </div>
     </div>
   </ion-content>
