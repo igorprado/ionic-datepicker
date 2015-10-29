@@ -373,7 +373,7 @@
         //Called when the user clicks on the Set' button of the modal
         scope.setIonicDatePickerDate = function () {
           dateSelected();
-          if (scope.selectedDate.date || scope.selectedDate.date.length) {
+          if (scope.selectedDate.date) {
             scope.closeModal();
           }
         };
