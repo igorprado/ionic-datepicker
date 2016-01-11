@@ -44,6 +44,7 @@
         scope.modalHeaderColor = scope.inputObj.modalHeaderColor ? (scope.inputObj.modalHeaderColor) : 'bar-stable';
         scope.modalFooterColor = scope.inputObj.modalFooterColor ? (scope.inputObj.modalFooterColor) : 'bar-stable';
         scope.selectMultipleDates = scope.inputObj.hasOwnProperty('selectMultipleDates') ? (scope.inputObj.selectMultipleDates) : false;
+        scope.readOnly = scope.inputObj.hasOwnProperty('readOnly') ? (scope.inputObj.readOnly) : false;
 
         scope.enableDatesFrom = {epoch: 0, isSet: false};
         scope.enableDatesTo = {epoch: 0, isSet: false};
@@ -248,6 +249,7 @@
 
         //Called when the user clicks on any date.
         scope.dateSelected = function(date) {
+          if (scope.readOnly) return;
           if(!date) return;
 
           if (scope.selectMultipleDates) {
